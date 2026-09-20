@@ -10,7 +10,8 @@ type Ctx = RouteContext<"/api/v1/companies/[id]">;
 /** Editable definition plus live status. */
 export const GET = api(async (_req, ctx: Ctx) => {
   const id = await idOf(ctx);
-  const [def, [status]] = await Promise.all([getCompanyForEdit(id), getBoard({ companyId: id })]);
+  const def = await getCompanyForEdit(id);
+  const [status] = await getBoard({ companyId: id });
   if (!def) throw new UserError("Company not found.");
   return { ...def, status };
 });

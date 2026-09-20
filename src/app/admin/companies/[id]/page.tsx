@@ -22,7 +22,8 @@ export default async function AdminCompanyPage({ params }: PageProps<"/admin/com
   await requireAdmin();
   const id = Number((await params).id);
   const now = new Date();
-  const [[c], edit] = Number.isInteger(id) ? await Promise.all([getBoard({ companyId: id, now }), getCompanyForEdit(id)]) : [[], null];
+  const [c] = Number.isInteger(id) ? await getBoard({ companyId: id, now }) : [];
+  const edit = Number.isInteger(id) ? await getCompanyForEdit(id) : null;
   if (!c || !edit) notFound();
   const groups = [...new Set(edit.items.map((i) => i.group))].sort((a, b) => Number(a !== null) - Number(b !== null));
 

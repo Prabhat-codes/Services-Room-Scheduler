@@ -79,14 +79,14 @@ export async function getBoard(opts: { companyId?: number; now?: Date } = {}): P
   const lateMinutes = await getLateMinutes(db);
   const byCompany = opts.companyId ? eq(s.companies.id, opts.companyId) : undefined;
 
-  const [companies, slots, rooms, taskCounts, commentCounts] = await Promise.all([
-    db.select().from(s.companies).where(byCompany),
-    db
+  // One query at a time: the pooler gives each instance a single connection.
+  const companies = await db.select().from(s.companies).where(byCompany);
+  const slots = await db
       .select()
       .from(s.slots)
       .where(opts.companyId ? eq(s.slots.companyId, opts.companyId) : undefined)
-      .orderBy(asc(s.slots.startsAt)),
-    db
+      .orderBy(asc(s.slots.startsAt));
+  const rooms = await db
       .select({
         id: s.assignments.id,
         slotId: s.assignments.slotId,
@@ -105,21 +105,20 @@ export async function getBoard(opts: { companyId?: number; now?: Date } = {}): P
       .innerJoin(s.rooms, eq(s.rooms.id, s.assignments.roomId))
       .innerJoin(s.buildings, eq(s.buildings.id, s.rooms.buildingId))
       .leftJoin(s.members, eq(s.members.id, s.assignments.doneById))
-      .orderBy(asc(s.buildings.sort), asc(s.buildings.name), asc(s.rooms.floor), asc(s.rooms.sort), asc(s.rooms.number)),
-    db
+      .orderBy(asc(s.buildings.sort), asc(s.buildings.name), asc(s.rooms.floor), asc(s.rooms.sort), asc(s.rooms.number));
+  const taskCounts = await db
       .select({
         assignmentId: s.tasks.assignmentId,
         total: count(),
         ticked: sql<number>`count(${s.tasks.doneAt})`.mapWith(Number),
       })
       .from(s.tasks)
-      .groupBy(s.tasks.assignmentId),
-    db
-      .select({ assignmentId: s.comments.assignmentId, n: count() })
-      .from(s.comments)
-      .where(isNull(s.comments.resolvedAt))
-      .groupBy(s.comments.assignmentId),
-  ]);
+      .groupBy(s.tasks.assignmentId);
+  const commentCounts = await db
+    .select({ assignmentId: s.comments.assignmentId, n: count() })
+    .from(s.comments)
+    .where(isNull(s.comments.resolvedAt))
+    .groupBy(s.comments.assignmentId);
 
   const tc = new Map(taskCounts.map((t) => [t.assignmentId, t]));
   const cc = new Map(commentCounts.map((c) => [c.assignmentId, c.n]));
@@ -220,8 +219,7 @@ export async function getAssignment(assignmentId: number) {
     .where(eq(s.assignments.id, assignmentId));
   if (!row) return null;
 
-  const [taskRows, commentRows, lateMinutes] = await Promise.all([
-    db
+  const taskRows = await db
       .select({
         id: s.tasks.id,
         label: s.tasks.label,
@@ -234,14 +232,9 @@ export async function getAssignment(assignmentId: number) {
       .from(s.tasks)
       .leftJoin(s.members, eq(s.members.id, s.tasks.doneById))
       .where(eq(s.tasks.assignmentId, assignmentId))
-      .orderBy(asc(s.tasks.sort), asc(s.tasks.id)),
-    db
-      .select()
-      .from(s.comments)
-      .where(eq(s.comments.assignmentId, assignmentId))
-      .orderBy(asc(s.comments.createdAt)),
-    getLateMinutes(db),
-  ]);
+      .orderBy(asc(s.tasks.sort), asc(s.tasks.id));
+  const commentRows = await db.select().from(s.comments).where(eq(s.comments.assignmentId, assignmentId)).orderBy(asc(s.comments.createdAt));
+  const lateMinutes = await getLateMinutes(db);
   const ticked = taskRows.filter((t) => t.doneAt).length;
   const status = roomStatus({ ticked, doneAt: row.doneAt }, row, new Date(), lateMinutes);
   return { ...row, tasks: taskRows, comments: commentRows, status, lateMinutes };

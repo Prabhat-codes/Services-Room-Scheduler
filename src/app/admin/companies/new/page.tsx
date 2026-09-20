@@ -8,7 +8,10 @@ export const metadata: Metadata = { title: "Schedule a company" };
 
 export default async function NewCompanyPage() {
   await requireAdmin();
-  const [presets, buildings, bookings, spocs] = await Promise.all([getPresets(), getBuildings({ activeOnly: true }), getBookings(), getSpocOptions()]);
+  const presets = await getPresets();
+  const buildings = await getBuildings({ activeOnly: true });
+  const bookings = await getBookings();
+  const spocs = await getSpocOptions();
   return (
     <Page className="max-w-5xl">
       <PageHeader title="Schedule a company" sub="The checklist you pick applies to every room. Rooms turn red if they aren't ready in time." />

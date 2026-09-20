@@ -13,7 +13,8 @@ export default async function CommentsPage({ searchParams }: PageProps<"/admin/c
   await requireAdmin();
   const { show } = await searchParams;
   const filter = show === "resolved" || show === "all" ? show : "open";
-  const [list, open] = await Promise.all([getComments(filter), filter === "open" ? null : getComments("open")]);
+  const list = await getComments(filter);
+  const open = filter === "open" ? null : await getComments("open");
   const now = new Date();
 
   return (

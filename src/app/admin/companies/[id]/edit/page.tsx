@@ -11,7 +11,10 @@ export default async function EditCompanyPage({ params }: PageProps<"/admin/comp
   await requireAdmin();
   const company = await getCompanyForEdit(Number((await params).id));
   if (!company) notFound();
-  const [presets, buildings, bookings, spocs] = await Promise.all([getPresets(), getBuildings({ activeOnly: true }), getBookings(), getSpocOptions()]);
+  const presets = await getPresets();
+  const buildings = await getBuildings({ activeOnly: true });
+  const bookings = await getBookings();
+  const spocs = await getSpocOptions();
   return (
     <Page className="max-w-5xl">
       <PageHeader

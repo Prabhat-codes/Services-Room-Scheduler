@@ -19,7 +19,8 @@ export default async function RoomsView({ searchParams }: PageProps<"/admin/room
   const sp = await searchParams;
   const now = new Date();
   const date = typeof sp.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : dayKey(now);
-  const [buildings, board] = await Promise.all([getBuildings(), getBoard({ now })]);
+  const buildings = await getBuildings();
+  const board = await getBoard({ now });
   const building = buildings.find((b) => String(b.id) === sp.b) ?? buildings[0];
 
   const bookings = new Map<number, Booking[]>();

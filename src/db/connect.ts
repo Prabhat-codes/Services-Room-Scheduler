@@ -5,11 +5,13 @@ import * as schema from "./schema";
 export type DB = PostgresJsDatabase<typeof schema>;
 
 /** Network blips and pooler-dropped sockets, all worth one more go. */
-const TRANSIENT = new Set(["ECONNRESET", "ENOTFOUND", "ETIMEDOUT", "ECONNREFUSED", "EPIPE", "EAI_AGAIN", "CONNECTION_CLOSED", "CONNECTION_ENDED", "CONNECT_TIMEOUT"]);
+const TRANSIENT = new Set(["ECONNRESET", "ENOTFOUND", "ETIMEDOUT", "ECONNREFUSED", "EPIPE", "EAI_AGAIN", "CONNECTION_CLOSED", "CONNECTION_ENDED", "CONNECT_TIMEOUT", "EMAXCONNSESSION"]);
 
 function isTransient(e: unknown): boolean {
-  const err = e as { code?: string; cause?: { code?: string } };
-  return TRANSIENT.has(err?.code ?? "") || TRANSIENT.has(err?.cause?.code ?? "");
+  const err = e as { code?: string; message?: string; cause?: { code?: string; message?: string } };
+  const text = `${err?.message ?? ""} ${err?.cause?.message ?? ""}`;
+  // "max clients reached" arrives as a plain Postgres XX000 error.
+  return TRANSIENT.has(err?.code ?? "") || TRANSIENT.has(err?.cause?.code ?? "") || /max clients reached/i.test(text);
 }
 
 /**
@@ -24,8 +26,8 @@ function withRetry(client: Sql): Sql {
       try {
         return await run();
       } catch (e) {
-        if (i >= 2 || !isTransient(e)) throw e;
-        await new Promise((r) => setTimeout(r, 150 * (i + 1)));
+        if (i >= 3 || !isTransient(e)) throw e;
+        await new Promise((r) => setTimeout(r, 120 * (i + 1) + Math.random() * 120));
       }
     }
   };
@@ -64,13 +66,13 @@ export async function connect(): Promise<DB> {
   const url = appUrl();
   if (url) {
     // Supabase's free pooler allows 15 connections in total, and in session mode a
-    // client holds one for its whole life. A small pool per instance leaves room for
-    // other instances; two is plenty (24 simultaneous page loads land in under half
-    // a second), and idle connections are handed back quickly.
+    // client holds one for its whole life. Serverless spreads requests over many
+    // instances, so each takes a single connection and hands it back quickly; pages
+    // query one step at a time so one connection is enough.
     const client = postgres(url, {
       prepare: false,
-      max: 2,
-      idle_timeout: 10,
+      max: 1,
+      idle_timeout: 5,
       max_lifetime: 60 * 10,
       connect_timeout: 15,
     });

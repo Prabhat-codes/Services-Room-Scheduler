@@ -11,14 +11,12 @@ export type BuildingWithRooms = {
 
 export async function getBuildings(opts: { activeOnly?: boolean } = {}): Promise<BuildingWithRooms[]> {
   const db = await getDb();
-  const [buildings, rooms] = await Promise.all([
-    db.select().from(s.buildings).orderBy(asc(s.buildings.sort), asc(s.buildings.name)),
-    db
-      .select()
-      .from(s.rooms)
-      .where(opts.activeOnly ? eq(s.rooms.active, true) : undefined)
-      .orderBy(asc(s.rooms.floor), asc(s.rooms.sort), asc(s.rooms.number)),
-  ]);
+  const buildings = await db.select().from(s.buildings).orderBy(asc(s.buildings.sort), asc(s.buildings.name));
+  const rooms = await db
+    .select()
+    .from(s.rooms)
+    .where(opts.activeOnly ? eq(s.rooms.active, true) : undefined)
+    .orderBy(asc(s.rooms.floor), asc(s.rooms.sort), asc(s.rooms.number));
   return buildings.map((b) => ({
     ...b,
     rooms: rooms.filter((r) => r.buildingId === b.id).map(({ id, number, floor, active, sort }) => ({ id, number, floor, active, sort })),
@@ -50,15 +48,13 @@ export async function getCompanyForEdit(id: number) {
   const db = await getDb();
   const [company] = await db.select().from(s.companies).where(eq(s.companies.id, id));
   if (!company) return null;
-  const [items, slots, assignments] = await Promise.all([
-    db.select().from(s.companyItems).where(eq(s.companyItems.companyId, id)).orderBy(asc(s.companyItems.sort)),
-    db.select().from(s.slots).where(eq(s.slots.companyId, id)).orderBy(asc(s.slots.startsAt)),
-    db
-      .select({ slotId: s.assignments.slotId, roomId: s.assignments.roomId })
-      .from(s.assignments)
-      .innerJoin(s.slots, eq(s.slots.id, s.assignments.slotId))
-      .where(eq(s.slots.companyId, id)),
-  ]);
+  const items = await db.select().from(s.companyItems).where(eq(s.companyItems.companyId, id)).orderBy(asc(s.companyItems.sort));
+  const slots = await db.select().from(s.slots).where(eq(s.slots.companyId, id)).orderBy(asc(s.slots.startsAt));
+  const assignments = await db
+    .select({ slotId: s.assignments.slotId, roomId: s.assignments.roomId })
+    .from(s.assignments)
+    .innerJoin(s.slots, eq(s.slots.id, s.assignments.slotId))
+    .where(eq(s.slots.companyId, id));
   return {
     ...company,
     items: items.map(({ label, group, qty, note }) => ({ label, group, qty, note })),
