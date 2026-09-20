@@ -14,13 +14,14 @@ export async function login(_: LoginState, form: FormData): Promise<LoginState> 
   const memberId = String(form.get("memberId") ?? "");
   const roll = String(form.get("roll") ?? "").trim();
   if (!memberId) return { error: "Pick your name from the list." };
-  if (!roll) return { error: "Enter your roll number.", memberId };
+  if (!roll) return { error: "Enter your password.", memberId };
   const db = await getDb();
+  // Case-insensitive on both sides: typing b25031 or B25031 both work.
   const [m] = await db
     .select()
     .from(s.members)
     .where(and(eq(s.members.id, Number(memberId)), eq(s.members.active, true), sql`upper(${s.members.rollNumber}) = ${roll.toUpperCase()}`));
-  if (!m) return { error: "That roll number doesn't match the name you picked. Check both and try again.", memberId };
+  if (!m) return { error: "That password doesn’t match the name you picked. Check both and try again.", memberId };
   await startRunnerSession(m.id, m.name);
   redirect("/companies");
 }

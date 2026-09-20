@@ -2,11 +2,13 @@
 
 import { useActionState } from "react";
 import { adminLogin } from "@/app/actions/admin";
+import { ServicesLogo } from "@/components/logo";
 
 export function AdminLogin() {
   const [state, action, pending] = useActionState(adminLogin, {});
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-4 py-10">
+      <ServicesLogo className="mb-6 h-10 w-auto" />
       <div data-status="over" className="plate px-6 pb-6 pt-8">
         <p className="text-[15px] font-semibold opacity-80">Scheduler</p>
         <h1 className="font-display text-[52px] font-extrabold leading-[0.9] tracking-tight">Room Checker admin</h1>

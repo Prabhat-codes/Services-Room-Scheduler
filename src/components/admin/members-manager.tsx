@@ -52,7 +52,7 @@ export function MembersManager({ members }: { members: Member[] }) {
           <thead className="border-b border-line text-[13px] text-ink-3">
             <tr>
               <th className="px-4 py-2.5 font-semibold">Name</th>
-              <th className="px-4 py-2.5 font-semibold">Roll number (login PIN)</th>
+              <th className="px-4 py-2.5 font-semibold">Roll number (their password)</th>
               <th className="px-4 py-2.5 font-semibold">Mobile number</th>
               <th className="px-4 py-2.5 font-semibold">Can sign in</th>
               <th className="px-4 py-2.5" />

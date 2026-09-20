@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getDb, schema as s } from "@/db";
 import { getRunner } from "@/lib/session";
 import { LoginForm } from "./_login/login-form";
+import { ServicesLogo } from "@/components/logo";
 
 export default async function RunnerLogin() {
   if (await getRunner()) redirect("/companies");
@@ -15,6 +16,7 @@ export default async function RunnerLogin() {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col px-4 pb-[max(24px,env(safe-area-inset-bottom))] pt-[max(40px,env(safe-area-inset-top))]">
+      <ServicesLogo priority className="mb-7 h-11 w-auto" />
       <div data-status="ready" className="plate px-6 pb-6 pt-8">
         <p className="text-[15px] font-semibold opacity-80">Services committee</p>
         <h1 className="font-display text-[56px] font-extrabold leading-[0.9] tracking-tight">Room Checker</h1>

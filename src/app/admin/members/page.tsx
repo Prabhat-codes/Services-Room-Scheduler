@@ -11,7 +11,7 @@ export default async function MembersPage() {
   const members = await getMembers();
   return (
     <Page className="max-w-4xl">
-      <PageHeader title="Members" sub="Runners sign in by picking their name and typing their roll number. Mobile numbers are used when a member is a company SPOC." />
+      <PageHeader title="Members" sub="Runners sign in by picking their name and typing their roll number as the password. Capitals don't matter. Mobile numbers are used when a member is a company SPOC." />
       <MembersManager members={members.map(({ id, name, rollNumber, phone, active }) => ({ id, name, rollNumber, phone, active }))} />
     </Page>
   );

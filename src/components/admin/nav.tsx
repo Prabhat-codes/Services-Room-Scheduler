@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
 import { Activity, Building2, CalendarPlus, LayoutGrid, LogOut, MessageSquareText, Settings2, Users } from "lucide-react";
 import { adminLogout } from "@/app/actions/admin";
+import { ServicesMark } from "@/components/logo";
 
 const links = [
   { href: "/admin", label: "Companies", icon: LayoutGrid, exact: true },
@@ -24,7 +25,8 @@ export function AdminNav({ openComments }: { openComments: number }) {
   return (
     <nav className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur lg:h-dvh lg:border-b-0 lg:border-r">
       <div className="flex items-center justify-between px-4 pb-1 pt-[max(10px,env(safe-area-inset-top))] lg:px-5 lg:pb-4 lg:pt-6">
-        <Link href="/admin" className="font-display text-[26px] font-extrabold leading-none tracking-tight">
+        <Link href="/admin" className="flex items-center gap-2 font-display text-[26px] font-extrabold leading-none tracking-tight">
+          <ServicesMark className="size-6" />
           Room Checker <span className="font-sans text-[13px] font-semibold tracking-normal text-ink-3">admin</span>
         </Link>
         <form action={adminLogout} className="lg:hidden">

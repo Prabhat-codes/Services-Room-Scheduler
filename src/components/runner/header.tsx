@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft, LogOut } from "lucide-react";
 import { logout } from "@/app/actions/runner";
+import { ServicesMark } from "@/components/logo";
 
 export function RunnerHeader({ name, back }: { name: string; back?: { href: string; label: string } }) {
   const first = name.split(" ")[0];
@@ -13,7 +14,8 @@ export function RunnerHeader({ name, back }: { name: string; back?: { href: stri
             <span className="truncate">{back.label}</span>
           </Link>
         ) : (
-          <Link href="/companies" className="font-display text-[26px] font-extrabold tracking-tight">
+          <Link href="/companies" className="flex items-center gap-2 font-display text-[26px] font-extrabold tracking-tight">
+            <ServicesMark className="size-6" />
             Room Checker
           </Link>
         )}
