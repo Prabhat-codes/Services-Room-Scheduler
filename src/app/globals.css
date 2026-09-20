@@ -1,26 +1,204 @@
 @import "tailwindcss";
 
+/*
+ * Room Checker palette.
+ * Paper + ink with a wayfinding-blue accent; status fills follow the planning sketch
+ * (butter yellow = not ready, mint = ready) plus brick red for "late".
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --paper: #f3f5f2;
+  --surface: #ffffff;
+  --sunk: #e7ebe6;
+  --ink: #17211c;
+  --ink-2: #48544e;
+  --ink-3: #75817b;
+  --line: #d6ddd5;
+  --accent: #2448c9;
+  --accent-ink: #ffffff;
+  --accent-soft: #e2e8fb;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --ready: #1e8a52;
+  --ready-soft: #cdeedb;
+  --ready-ink: #0d4a2a;
+  --pending: #b88300;
+  --pending-soft: #fbe7a4;
+  --pending-ink: #5f4200;
+  --late: #c8412b;
+  --late-soft: #f8d6ce;
+  --late-ink: #74200f;
+  --over: #87918b;
+  --over-soft: #e4e8e3;
+  --over-ink: #3d4641;
+
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --paper: #0e1411;
+    --surface: #161e1a;
+    --sunk: #1f2823;
+    --ink: #e6ede8;
+    --ink-2: #a7b3ac;
+    --ink-3: #78857e;
+    --line: #2b3530;
+    --accent: #87a0ff;
+    --accent-ink: #0a1233;
+    --accent-soft: #1c2750;
+
+    --ready: #4fc98b;
+    --ready-soft: #15382a;
+    --ready-ink: #bff0d5;
+    --pending: #f0bf4c;
+    --pending-soft: #3a2f10;
+    --pending-ink: #fbe2a0;
+    --late: #ff7b64;
+    --late-soft: #42201a;
+    --late-ink: #ffcfc4;
+    --over: #7c8882;
+    --over-soft: #222a26;
+    --over-ink: #b9c3bd;
+
+    color-scheme: dark;
   }
 }
 
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-sunk: var(--sunk);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-ready: var(--ready);
+  --color-ready-soft: var(--ready-soft);
+  --color-ready-ink: var(--ready-ink);
+  --color-pending: var(--pending);
+  --color-pending-soft: var(--pending-soft);
+  --color-pending-ink: var(--pending-ink);
+  --color-late: var(--late);
+  --color-late-soft: var(--late-soft);
+  --color-late-ink: var(--late-ink);
+  --color-over: var(--over);
+  --color-over-soft: var(--over-soft);
+  --color-over-ink: var(--over-ink);
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-signage), "Arial Narrow", ui-sans-serif, sans-serif;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  text-size-adjust: 100%;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Status tones. Every status-coloured thing reads from these four custom properties,
+ * so a single `data-status` attribute recolours a plate, chip or bar consistently.
+ */
+[data-status="idle"],
+[data-status="working"] {
+  --tone: var(--pending);
+  --tone-soft: var(--pending-soft);
+  --tone-ink: var(--pending-ink);
+}
+[data-status="ready"] {
+  --tone: var(--ready);
+  --tone-soft: var(--ready-soft);
+  --tone-ink: var(--ready-ink);
+}
+[data-status="late"] {
+  --tone: var(--late);
+  --tone-soft: var(--late-soft);
+  --tone-ink: var(--late-ink);
+}
+[data-status="over"] {
+  --tone: var(--over);
+  --tone-soft: var(--over-soft);
+  --tone-ink: var(--over-ink);
+}
+
+/* Door-plate tile: the one decorative flourish — two mounting screws on a room sign. */
+.plate {
+  position: relative;
+  background: var(--tone-soft);
+  color: var(--tone-ink);
+  border: 1.5px solid color-mix(in oklab, var(--tone) 55%, transparent);
+  border-radius: 10px;
+}
+.plate::before,
+.plate::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--tone-ink) 30%, transparent);
+}
+.plate::before {
+  left: 9px;
+}
+.plate::after {
+  right: 9px;
+}
+
+details > summary {
+  list-style: none;
+  cursor: pointer;
+}
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.animate-pop {
+  animation: pop 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
