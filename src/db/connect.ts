@@ -11,7 +11,15 @@ export type DB = PostgresJsDatabase<typeof schema>;
 export async function connect(): Promise<DB> {
   const url = process.env.DATABASE_URL;
   if (url) {
-    const client = postgres(url, { prepare: false, max: 5 });
+    // Serverless: many short-lived instances share Supabase's pooler, so keep
+    // one connection each and let it go when idle.
+    const serverless = !!process.env.VERCEL;
+    const client = postgres(url, {
+      prepare: false,
+      max: serverless ? 1 : 5,
+      idle_timeout: serverless ? 20 : undefined,
+      connect_timeout: 15,
+    });
     return drizzlePg(client, { schema });
   }
   const { PGlite } = await import("@electric-sql/pglite");
