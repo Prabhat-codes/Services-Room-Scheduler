@@ -23,7 +23,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${body.variable} ${signage.variable} h-full antialiased`}>
-      <body className="min-h-full">{children}</body>
+      {/* Extensions like Grammarly add attributes to body before React hydrates. */}
+      <body className="min-h-full" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }

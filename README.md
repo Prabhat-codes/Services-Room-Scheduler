@@ -35,8 +35,10 @@ Copy `.env.example` to `.env.local` and fill in:
 | `ADMIN_PASSWORD` | Password for `/admin` |
 | `SESSION_SECRET` | Random string used to sign login cookies |
 | `ADMIN_API_KEY` | Bearer token for the REST API |
-| `DATABASE_URL` | Postgres URL. Empty locally; in production the Supabase **transaction pooler** URL (port 6543) |
+| `DATABASE_URL` | Postgres URL. Empty locally; in production the Supabase **session pooler** URL (port 5432) |
 | `DIRECT_URL` (or `MIGRATION_DATABASE_URL`) | Supabase **session pooler** URL (port 5432), used for schema migrations |
+
+> **Use the session pooler, not the transaction pooler.** Pages here run several queries at once, and Supabase's transaction pooler (port 6543) deadlocks under that, while the session pooler (5432) serves 16 simultaneous page loads in under half a second. If `DATABASE_URL` still points at 6543, the app falls back to `DIRECT_URL` automatically. Diagnose a slow or stuck database with `npx tsx scripts/dbcheck.ts`.
 
 ## Database changes
 

@@ -23,3 +23,4 @@ Phone-first room-readiness tool for a placement services committee. See README.m
 - Status colour comes from `data-status` + the tone variables in `globals.css`; never hard-code status colours. Always pair colour with words.
 - Design: Big Shoulders (display, room numbers, company names) + Atkinson Hyperlegible Next (body). Room tiles use the `.plate` door-sign style. Sentence case, no all-caps labels.
 - Data changes against production: prefer the REST API with `ADMIN_API_KEY`; schema changes go through Drizzle migrations only.
+- Postgres: use Supabase's **session pooler (5432)**. The transaction pooler (6543) deadlocks when a page runs queries in parallel, which every dashboard here does. `src/db/connect.ts` falls back to `DIRECT_URL` if `DATABASE_URL` points at 6543, retries transient connection errors, and retires idle connections.
