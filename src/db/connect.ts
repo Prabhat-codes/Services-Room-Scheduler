@@ -53,8 +53,10 @@ function withRetry(client: Sql): Sql {
 function appUrl() {
   const main = process.env.DATABASE_URL;
   const session = process.env.MIGRATION_DATABASE_URL || process.env.DIRECT_URL;
-  if (main?.includes(":6543") && session) return session;
-  return main;
+  if (!main?.includes(":6543")) return main;
+  if (session) return session;
+  // Same host and credentials, session-pooler port, and pgbouncer mode dropped.
+  return main.replace(":6543", ":5432").replace(/[?&]pgbouncer=true/, "");
 }
 
 export async function connect(): Promise<DB> {
