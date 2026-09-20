@@ -38,7 +38,7 @@ Copy `.env.example` to `.env.local` and fill in:
 | `DATABASE_URL` | Postgres URL. Empty locally; in production the Supabase **session pooler** URL (port 5432) |
 | `DIRECT_URL` (or `MIGRATION_DATABASE_URL`) | Supabase **session pooler** URL (port 5432), used for schema migrations |
 
-> **Use the session pooler, not the transaction pooler.** Pages here run several queries at once, and Supabase's transaction pooler (port 6543) deadlocks under that, while the session pooler (5432) serves 16 simultaneous page loads in under half a second. If `DATABASE_URL` still points at 6543, the app falls back to `DIRECT_URL` automatically. Diagnose a slow or stuck database with `npx tsx scripts/dbcheck.ts`.
+> **Use the session pooler, not the transaction pooler.** Pages here run several queries at once, and Supabase's transaction pooler (port 6543) deadlocks under that, while the session pooler (5432) serves 16 simultaneous page loads in under half a second. If `DATABASE_URL` still points at 6543, the app falls back to `DIRECT_URL` automatically. Diagnose a slow or stuck database with `GET /api/v1/health`, `npx tsx scripts/dbcheck.ts`, or `npx tsx scripts/conns.ts` (who is holding the 15 connections).
 
 ## Database changes
 
@@ -79,6 +79,7 @@ All endpoints need `Authorization: Bearer $ADMIN_API_KEY` (or an admin session c
 | PATCH | `/api/v1/comments/:id` | `{ resolved: true }` |
 | GET, PUT | `/api/v1/settings` | `{ lateMinutes }` |
 | GET | `/api/v1/activity?limit=300` | Audit log |
+| GET | `/api/v1/health` | Database reachable, round-trip ms, pooler port in use |
 
 ```bash
 curl -H "Authorization: Bearer $ADMIN_API_KEY" https://<your-app>.vercel.app/api/v1/board

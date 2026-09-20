@@ -42,15 +42,12 @@ function withRetry(client: Sql): Sql {
 }
 
 /**
- * Production: postgres-js against DATABASE_URL (Supabase pooler).
- * Local dev without DATABASE_URL: embedded PGlite in .data/pglite, auto-migrated.
+ * Supabase's transaction pooler (port 6543) cannot serve this app at all: the driver
+ * pipelines a page's queries down one connection and that pooler stalls on them, even
+ * for a single visitor. The session pooler (5432) handles the same load in ~500ms, so
+ * a 6543 URL is redirected there.
  */
-/**
- * Supabase's transaction pooler (port 6543) deadlocks when a page runs several
- * queries at once, so the session pooler (5432) is what this app wants. If
- * DATABASE_URL still points at 6543, fall back to the session pooler URL.
- */
-function appUrl() {
+export function appUrl() {
   const main = process.env.DATABASE_URL;
   const session = process.env.MIGRATION_DATABASE_URL || process.env.DIRECT_URL;
   if (!main?.includes(":6543")) return main;
@@ -59,15 +56,21 @@ function appUrl() {
   return main.replace(":6543", ":5432").replace(/[?&]pgbouncer=true/, "");
 }
 
+/**
+ * Production: postgres-js against the Supabase session pooler.
+ * Local dev without DATABASE_URL: embedded PGlite in .data/pglite, auto-migrated.
+ */
 export async function connect(): Promise<DB> {
   const url = appUrl();
   if (url) {
-    // Room for the handful of queries a page runs in parallel; idle connections
-    // are retired so the pooler isn't held open.
+    // Supabase's free pooler allows 15 connections in total, and in session mode a
+    // client holds one for its whole life. A small pool per instance leaves room for
+    // other instances; two is plenty (24 simultaneous page loads land in under half
+    // a second), and idle connections are handed back quickly.
     const client = postgres(url, {
       prepare: false,
-      max: 5,
-      idle_timeout: 20,
+      max: 2,
+      idle_timeout: 10,
       max_lifetime: 60 * 10,
       connect_timeout: 15,
     });
