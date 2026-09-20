@@ -36,7 +36,7 @@ Copy `.env.example` to `.env.local` and fill in:
 | `SESSION_SECRET` | Random string used to sign login cookies |
 | `ADMIN_API_KEY` | Bearer token for the REST API |
 | `DATABASE_URL` | Postgres URL. Empty locally; in production the Supabase **transaction pooler** URL (port 6543) |
-| `MIGRATION_DATABASE_URL` | Optional. Supabase **session pooler** URL (port 5432) for schema migrations |
+| `DIRECT_URL` (or `MIGRATION_DATABASE_URL`) | Supabase **session pooler** URL (port 5432), used for schema migrations |
 
 ## Database changes
 

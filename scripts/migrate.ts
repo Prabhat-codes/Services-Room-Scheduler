@@ -10,7 +10,7 @@ async function main() {
     return;
   }
   // A direct/session connection is safest for DDL; fall back to the app's pooled URL.
-  const url = process.env.MIGRATION_DATABASE_URL || process.env.DATABASE_URL;
+  const url = process.env.MIGRATION_DATABASE_URL || process.env.DIRECT_URL || process.env.DATABASE_URL;
   if (!url) {
     const { connect } = await import("../src/db/connect");
     await connect(); // PGlite auto-migrates on connect
