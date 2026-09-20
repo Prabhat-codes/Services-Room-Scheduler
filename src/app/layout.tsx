@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible_Next, Big_Shoulders } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const body = Atkinson_Hyperlegible_Next({ variable: "--font-body", subsets: ["latin"], adjustFontFallback: false, fallback: ["system-ui", "sans-serif"] });
@@ -24,10 +23,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${body.variable} ${signage.variable} h-full antialiased`}>
-      <body className="min-h-full">
-        {children}
-        <Analytics />
-      </body>
+      <body className="min-h-full">{children}</body>
     </html>
   );
 }
