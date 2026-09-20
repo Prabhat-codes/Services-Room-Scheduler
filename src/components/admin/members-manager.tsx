@@ -6,13 +6,13 @@ import { Pencil, Trash2, UserPlus } from "lucide-react";
 import { createMemberAction, deleteMemberAction, updateMemberAction } from "@/app/actions/admin";
 import { btn, input } from "./ui";
 
-type Member = { id: number; name: string; rollNumber: string; active: boolean };
+type Member = { id: number; name: string; rollNumber: string; phone: string; active: boolean };
 
 export function MembersManager({ members }: { members: Member[] }) {
   const [q, setQ] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
-  const shown = members.filter((m) => `${m.name} ${m.rollNumber}`.toLowerCase().includes(q.trim().toLowerCase()));
+  const shown = members.filter((m) => `${m.name} ${m.rollNumber} ${m.phone}`.toLowerCase().includes(q.trim().toLowerCase()));
 
   const run = (fn: () => Promise<{ ok: boolean; error?: string }>, after?: () => void) =>
     start(async () => {
@@ -24,14 +24,18 @@ export function MembersManager({ members }: { members: Member[] }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <AddMember onAdd={(name, rollNumber, reset) => run(() => createMemberAction({ name, rollNumber }), reset)} pending={pending} />
-      <BulkAdd onAdd={(rows, reset) => run(async () => {
-        for (const [name, rollNumber] of rows) {
-          const r = await createMemberAction({ name, rollNumber });
-          if (!r.ok) return r;
+      <AddMember onAdd={(name, rollNumber, phone, reset) => run(() => createMemberAction({ name, rollNumber, phone }), reset)} pending={pending} />
+      <BulkAdd
+        onAdd={(rows, reset) =>
+          run(async () => {
+            for (const [name, rollNumber, phone] of rows) {
+              const r = await createMemberAction({ name, rollNumber, phone: phone ?? "" });
+              if (!r.ok) return r;
+            }
+            return { ok: true };
+          }, reset)
         }
-        return { ok: true };
-      }, reset)} />
+      />
       {error && (
         <p role="alert" className="text-[14px] font-semibold text-late">
           {error}
@@ -49,6 +53,7 @@ export function MembersManager({ members }: { members: Member[] }) {
             <tr>
               <th className="px-4 py-2.5 font-semibold">Name</th>
               <th className="px-4 py-2.5 font-semibold">Roll number (login PIN)</th>
+              <th className="px-4 py-2.5 font-semibold">Mobile number</th>
               <th className="px-4 py-2.5 font-semibold">Can sign in</th>
               <th className="px-4 py-2.5" />
             </tr>
@@ -68,6 +73,7 @@ function MemberRow({ m, pending, run }: { m: Member; pending: boolean; run: (fn:
   const [edit, setEdit] = useState(false);
   const [name, setName] = useState(m.name);
   const [roll, setRoll] = useState(m.rollNumber);
+  const [phone, setPhone] = useState(m.phone);
   if (edit)
     return (
       <tr className="bg-accent-soft/40">
@@ -77,12 +83,15 @@ function MemberRow({ m, pending, run }: { m: Member; pending: boolean; run: (fn:
         <td className="px-3 py-2">
           <input className={clsx(input, "tnum uppercase")} value={roll} onChange={(e) => setRoll(e.target.value)} aria-label="Roll number" />
         </td>
+        <td className="px-3 py-2">
+          <input className={clsx(input, "tnum")} value={phone} onChange={(e) => setPhone(e.target.value)} aria-label="Mobile number" />
+        </td>
         <td />
         <td className="whitespace-nowrap px-3 py-2 text-right">
           <button className={btn.quiet} onClick={() => setEdit(false)}>
             Cancel
           </button>{" "}
-          <button className={btn.primary} disabled={pending} onClick={() => run(() => updateMemberAction(m.id, { name, rollNumber: roll }), () => setEdit(false))}>
+          <button className={btn.primary} disabled={pending} onClick={() => run(() => updateMemberAction(m.id, { name, rollNumber: roll, phone }), () => setEdit(false))}>
             Save
           </button>
         </td>
@@ -92,6 +101,15 @@ function MemberRow({ m, pending, run }: { m: Member; pending: boolean; run: (fn:
     <tr className={clsx(!m.active && "text-ink-3")}>
       <td className="px-4 py-2.5 font-semibold">{m.name}</td>
       <td className="tnum px-4 py-2.5">{m.rollNumber}</td>
+      <td className="tnum px-4 py-2.5">
+        {m.phone ? (
+          <a href={`tel:${m.phone.replace(/[^\d+]/g, "")}`} className="text-accent hover:underline">
+            {m.phone}
+          </a>
+        ) : (
+          <span className="text-ink-3">Not set</span>
+        )}
+      </td>
       <td className="px-4 py-2.5">
         <label className="inline-flex cursor-pointer items-center gap-2">
           <input type="checkbox" className="size-4 accent-(--accent)" checked={m.active} disabled={pending} onChange={(e) => run(() => updateMemberAction(m.id, { active: e.target.checked }))} />
@@ -114,17 +132,19 @@ function MemberRow({ m, pending, run }: { m: Member; pending: boolean; run: (fn:
   );
 }
 
-function AddMember({ onAdd, pending }: { onAdd: (name: string, roll: string, reset: () => void) => void; pending: boolean }) {
+function AddMember({ onAdd, pending }: { onAdd: (name: string, roll: string, phone: string, reset: () => void) => void; pending: boolean }) {
   const [name, setName] = useState("");
   const [roll, setRoll] = useState("");
+  const [phone, setPhone] = useState("");
   return (
     <form
       className="flex flex-col gap-2 rounded-xl border border-line bg-surface p-4 sm:flex-row sm:items-end"
       onSubmit={(e) => {
         e.preventDefault();
-        onAdd(name, roll, () => {
+        onAdd(name, roll, phone, () => {
           setName("");
           setRoll("");
+          setPhone("");
         });
       }}
     >
@@ -132,9 +152,13 @@ function AddMember({ onAdd, pending }: { onAdd: (name: string, roll: string, res
         Name
         <input className={input} value={name} onChange={(e) => setName(e.target.value)} required />
       </label>
-      <label className="flex flex-col gap-1 text-[14px] font-semibold sm:w-48">
+      <label className="flex flex-col gap-1 text-[14px] font-semibold sm:w-40">
         Roll number
         <input className={clsx(input, "tnum uppercase")} value={roll} onChange={(e) => setRoll(e.target.value)} required />
+      </label>
+      <label className="flex flex-col gap-1 text-[14px] font-semibold sm:w-44">
+        Mobile number
+        <input className={clsx(input, "tnum")} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98xxx xxxxx" />
       </label>
       <button className={btn.primary} disabled={pending}>
         <UserPlus aria-hidden className="size-4" /> Add member
@@ -143,17 +167,17 @@ function AddMember({ onAdd, pending }: { onAdd: (name: string, roll: string, res
   );
 }
 
-function BulkAdd({ onAdd }: { onAdd: (rows: [string, string][], reset: () => void) => void }) {
+function BulkAdd({ onAdd }: { onAdd: (rows: string[][], reset: () => void) => void }) {
   const [text, setText] = useState("");
   const rows = text
     .split("\n")
     .map((l) => l.split(/\t|,/).map((x) => x.trim()))
-    .filter((p): p is [string, string] => p.length >= 2 && !!p[0] && !!p[1] && !/^name$/i.test(p[0]));
+    .filter((p) => p.length >= 2 && !!p[0] && !!p[1] && !/^name$/i.test(p[0]));
   return (
     <details className="rounded-xl border border-line bg-surface">
       <summary className="px-4 py-3 text-[15px] font-semibold">Add many at once</summary>
       <div className="flex flex-col gap-2 border-t border-line p-4">
-        <p className="text-[14px] text-ink-2">Paste one member per line as name, then a tab or comma, then roll number. Copying two columns from a spreadsheet works.</p>
+        <p className="text-[14px] text-ink-2">Paste one member per line: name, then roll number, then optionally a mobile number, separated by tabs or commas. Copying columns from a spreadsheet works.</p>
         <textarea rows={5} className={clsx(input, "tnum")} value={text} onChange={(e) => setText(e.target.value)} placeholder={"Asha Rao\tB25500\nKiran Das\tH25120"} />
         <button className={clsx(btn.quiet, "self-start")} disabled={!rows.length} onClick={() => onAdd(rows, () => setText(""))}>
           Add {rows.length || ""} member{rows.length === 1 ? "" : "s"}

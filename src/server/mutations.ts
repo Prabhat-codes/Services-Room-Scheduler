@@ -335,6 +335,7 @@ export async function finishCompany(actor: Actor, id: number) {
 
 export const MemberInput = z.object({
   name: z.string().trim().min(1, "Name is required.").max(120),
+  phone: z.string().trim().max(40).default(""),
   rollNumber: z
     .string()
     .trim()

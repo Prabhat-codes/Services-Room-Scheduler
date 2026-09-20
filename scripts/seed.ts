@@ -23,8 +23,11 @@ async function main() {
         await db.insert(s.rooms).values({ buildingId: building.id, floor: f.floor, number, sort: Number(number) }).onConflictDoNothing();
   }
 
-  for (const [name, rollNumber] of MEMBERS) {
-    await db.insert(s.members).values({ name, rollNumber }).onConflictDoUpdate({ target: s.members.rollNumber, set: { name } });
+  for (const [name, rollNumber, phone] of MEMBERS) {
+    await db
+      .insert(s.members)
+      .values({ name, rollNumber, phone })
+      .onConflictDoUpdate({ target: s.members.rollNumber, set: { name, phone } });
   }
 
   for (const [sort, p] of PRESETS.entries()) {

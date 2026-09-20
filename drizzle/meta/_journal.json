@@ -8,6 +8,13 @@
       "when": 1789848443026,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789888832567,
+      "tag": "0001_first_scorpion",
+      "breakpoints": true
     }
   ]
 }

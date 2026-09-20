@@ -15,6 +15,7 @@ type Preset = { id: number; label: string; group: string | null; defaultQty: num
 type Building = { id: number; name: string; rooms: { id: number; number: string; floor: string; active: boolean }[] };
 type Booking = { roomId: number; companyId: number; company: string; startsAt: Date; endsAt: Date };
 type Slot = { key: number; id?: number; date: string; start: string; end: string; roomIds: number[] };
+type Spoc = { name: string; phone: string };
 
 export type CompanyFormInitial = {
   id: number;
@@ -46,11 +47,13 @@ export function CompanyForm({
   presets,
   buildings,
   bookings,
+  spocs,
   initial,
 }: {
   presets: Preset[];
   buildings: Building[];
   bookings: Booking[];
+  spocs: Spoc[];
   initial?: CompanyFormInitial;
 }) {
   const router = useRouter();
@@ -136,7 +139,27 @@ export function CompanyForm({
             <input id="name" className={clsx(input, "text-[17px]")} value={name} onChange={(e) => setName(e.target.value)} placeholder="For example Northwind Analytics" />
           </Field>
           <Field label="SPOC name" id="spocName">
-            <input id="spocName" className={input} value={spocName} onChange={(e) => setSpocName(e.target.value)} />
+            <input
+              id="spocName"
+              className={input}
+              list="spoc-options"
+              value={spocName}
+              placeholder="Pick a committee member, or type a name"
+              onChange={(e) => {
+                const v = e.target.value;
+                setSpocName(v);
+                // Picking a committee member fills in their number.
+                const match = spocs.find((m) => m.name === v);
+                if (match?.phone) setSpocPhone(match.phone);
+              }}
+            />
+            <datalist id="spoc-options">
+              {spocs.map((m) => (
+                <option key={m.name} value={m.name}>
+                  {m.phone}
+                </option>
+              ))}
+            </datalist>
           </Field>
           <Field label="SPOC phone" id="spocPhone">
             <input id="spocPhone" type="tel" className={clsx(input, "tnum")} value={spocPhone} onChange={(e) => setSpocPhone(e.target.value)} placeholder="+91 98xxx xxxxx" />

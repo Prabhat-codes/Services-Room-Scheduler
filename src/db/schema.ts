@@ -47,6 +47,7 @@ export const members = pgTable("members", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   rollNumber: text("roll_number").notNull().unique(),
+  phone: text("phone").notNull().default(""),
   active: boolean("active").notNull().default(true),
   createdAt: ts("created_at").notNull().defaultNow(),
 });

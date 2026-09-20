@@ -35,6 +35,16 @@ export async function getMembers() {
   return db.select().from(s.members).orderBy(asc(s.members.name));
 }
 
+/** Members who can be a company SPOC, with their number for auto-fill. */
+export async function getSpocOptions() {
+  const db = await getDb();
+  return db
+    .select({ name: s.members.name, phone: s.members.phone })
+    .from(s.members)
+    .where(eq(s.members.active, true))
+    .orderBy(asc(s.members.name));
+}
+
 /** Everything the edit form needs to round-trip a company. */
 export async function getCompanyForEdit(id: number) {
   const db = await getDb();
