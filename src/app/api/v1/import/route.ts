@@ -10,7 +10,9 @@ import type { ProcessMode } from "@/db/schema";
  * Without `apply` it only reports what it would create.
  */
 export const POST = api(async (req) => {
-  const form = await req.formData();
+  const form = await req.formData().catch(() => {
+    throw new UserError("Send the sheet as multipart form data, with the file in a `file` field.");
+  });
   const file = form.get("file");
   if (!(file instanceof File) || !file.size) throw new UserError("Attach the sheet as the `file` field.");
   const date = String(form.get("date") ?? "") || dayKey(new Date());
