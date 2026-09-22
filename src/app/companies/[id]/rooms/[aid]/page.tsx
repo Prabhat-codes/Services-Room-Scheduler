@@ -46,6 +46,12 @@ export default async function RoomPage({ params }: PageProps<"/companies/[id]/ro
             {dayLabel(a.startsAt, now)}, {fmtRange(a.startsAt, a.endsAt)}{" "}
             <span className="font-normal text-ink-2">({onNow ? "on now" : a.endsAt <= now ? "finished" : relative(a.startsAt, now)})</span>
           </dd>
+          {a.note && (
+            <>
+              <dt className="text-ink-3">Panel</dt>
+              <dd className="font-semibold">{a.note}</dd>
+            </>
+          )}
           <dt className="text-ink-3">SPOC</dt>
           <dd className="flex items-center justify-between gap-3">
             <span className="font-semibold">{a.spocName || "Not set"}</span>

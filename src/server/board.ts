@@ -27,6 +27,7 @@ export type BoardRoom = {
   doneAt: Date | null;
   doneBy: string | null;
   customized: boolean;
+  note: string;
   openComments: number;
   status: RoomStatus;
 };
@@ -100,6 +101,7 @@ export async function getBoard(opts: { companyId?: number; now?: Date } = {}): P
         doneAt: s.assignments.doneAt,
         doneBy: s.members.name,
         customized: s.assignments.customized,
+        note: s.assignments.note,
       })
       .from(s.assignments)
       .innerJoin(s.rooms, eq(s.rooms.id, s.assignments.roomId))
@@ -142,6 +144,7 @@ export async function getBoard(opts: { companyId?: number; now?: Date } = {}): P
       doneAt: r.doneAt,
       doneBy: r.doneBy,
       customized: r.customized,
+      note: r.note,
       openComments: cc.get(r.id) ?? 0,
     };
     const list = roomsBySlot.get(r.slotId) ?? [];
@@ -196,6 +199,7 @@ export async function getAssignment(assignmentId: number) {
       doneAt: s.assignments.doneAt,
       doneBy: s.members.name,
       customized: s.assignments.customized,
+      note: s.assignments.note,
       roomId: s.rooms.id,
       number: s.rooms.number,
       floor: s.rooms.floor,

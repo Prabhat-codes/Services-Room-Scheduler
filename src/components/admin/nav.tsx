@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
-import { Activity, Building2, CalendarPlus, LayoutGrid, LogOut, MessageSquareText, Settings2, Users } from "lucide-react";
+import { Activity, Building2, CalendarPlus, LayoutGrid, LogOut, MessageSquareText, Settings2, Sheet, Users } from "lucide-react";
 import { adminLogout } from "@/app/actions/admin";
 import { ServicesMark } from "@/components/logo";
 
@@ -12,6 +12,7 @@ const links = [
   { href: "/admin/rooms", label: "Rooms", icon: Building2 },
   { href: "/admin/comments", label: "Comments", icon: MessageSquareText },
   { href: "/admin/companies/new", label: "Schedule", icon: CalendarPlus },
+  { href: "/admin/import", label: "Import", icon: Sheet },
   { href: "/admin/members", label: "Members", icon: Users },
   { href: "/admin/setup", label: "Setup", icon: Settings2 },
   { href: "/admin/activity", label: "Activity", icon: Activity },

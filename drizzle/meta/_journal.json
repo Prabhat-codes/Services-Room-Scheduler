@@ -15,6 +15,13 @@
       "when": 1789888832567,
       "tag": "0001_first_scorpion",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790103175678,
+      "tag": "0002_lazy_talon",
+      "breakpoints": true
     }
   ]
 }

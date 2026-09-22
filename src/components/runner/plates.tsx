@@ -38,6 +38,7 @@ export function RoomPlate({ room, href, startsAt, now }: { room: BoardRoom; href
         {room.building}
         {room.floor ? `, ${room.floor}` : ""}
       </span>
+      {room.note && <span className="mt-0.5 line-clamp-2 text-[13px] opacity-75">{room.note}</span>}
       <span className="mt-auto flex flex-col gap-1.5 pt-3">
         {room.status !== "ready" && room.status !== "over" && <Meter value={room.ticked} total={room.total} status={room.status} />}
         <span className="flex items-center gap-1 text-[14px] font-bold">

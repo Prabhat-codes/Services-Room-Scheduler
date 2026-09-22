@@ -118,6 +118,8 @@ export const assignments = pgTable(
       .notNull()
       .references(() => rooms.id, { onDelete: "restrict" }),
     customized: boolean("customized").notNull().default(false),
+    /** Free text for this room in this slot, e.g. "Panel 3, HR round". */
+    note: text("note").notNull().default(""),
     doneAt: ts("done_at"),
     doneById: integer("done_by_id").references(() => members.id, { onDelete: "set null" }),
   },

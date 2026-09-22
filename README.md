@@ -57,6 +57,12 @@ CI fails if the schema changes without a matching migration.
 3. Seed once from your machine: `DATABASE_URL=<session pooler url> npm run db:seed`.
 4. From then on, every push to `main` deploys to production and every pull request gets a preview URL. GitHub Actions runs lint, type-check, the migration check and a build on each push.
 
+## Importing a schedule
+
+**Admin > Import** takes the room allocation spreadsheet: `Company, Panel Details, Start Time, End Time, Building, Floor, Room#, Set-up Requirements`. Optional `Date`, `SPOC Name`, `SPOC Phone` and `Mode` columns are used when present, and a blank template is downloadable from that page.
+
+Rows sharing a company and the same start and end time become one slot with several rooms. "Panel Details" is shown to runners on that room. Set-up requirements are added to that room's checklist on top of the company's list, and understand quantities (`Chairs x6`, `6 Chairs`). The upload shows a preview, including rows it couldn't read and rooms already booked, before anything is created.
+
 ## REST API
 
 All endpoints need `Authorization: Bearer $ADMIN_API_KEY` (or an admin session cookie). JSON in, JSON out. Errors return `{ "error": "..." }` with status 400, or 401 without auth.
@@ -80,6 +86,7 @@ All endpoints need `Authorization: Bearer $ADMIN_API_KEY` (or an admin session c
 | GET, PUT | `/api/v1/settings` | `{ lateMinutes }` |
 | GET | `/api/v1/activity?limit=300` | Audit log |
 | GET | `/api/v1/health` | Database reachable, round-trip ms, pooler port in use |
+| POST | `/api/v1/import` | Multipart room-allocation sheet: `file`, `date`, `mode`, `apply=1` to create. Without `apply` it reports what it would create |
 
 ```bash
 curl -H "Authorization: Bearer $ADMIN_API_KEY" https://<your-app>.vercel.app/api/v1/board
